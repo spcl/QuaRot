@@ -1,0 +1,10 @@
+
+[submodule "third-party/cutlass"]
+	path = third-party/cutlass
+	url = https://github.com/NVIDIA/cutlass.git
+[submodule "third-party/nvbench"]
+	path = third-party/nvbench
+	url = https://github.com/NVIDIA/nvbench
+[submodule "third-party/fast-hadamard-transform"]
+	path = third-party/fast-hadamard-transform
+	url = https://github.com/Dao-AILab/fast-hadamard-transform.git
