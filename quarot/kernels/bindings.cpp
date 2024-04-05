@@ -117,13 +117,13 @@ inline void check_shape(const torch::Tensor &a, const torch::Tensor &b,
 
 void batch_decode_i4(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
                      torch::Tensor kv_param, torch::Tensor kv_indptr,
-                     torch::Tensor kv_indicies, torch::Tensor last_page_offset,
+                     torch::Tensor kv_indices, torch::Tensor last_page_offset,
                      int layer_idx) {
   CHECK_INPUT(o);
   CHECK_INPUT(q);
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
 
   CHECK_DIM(3, o);                 // [B, N, D]
@@ -131,7 +131,7 @@ void batch_decode_i4(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 2]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
 
   CHECK_EQ(kv_data.scalar_type(), at::ScalarType::Byte);
@@ -150,19 +150,19 @@ void batch_decode_i4(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
   FlashInferBatchDecodeKernel_i4<128>(
       (nv_half *)o.data_ptr(), (nv_half *)q.data_ptr(),
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), num_layers, layer_idx, num_heads,
       page_size, batch_size);
 }
 
 void init_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
-                torch::Tensor kv_indptr, torch::Tensor kv_indicies,
+                torch::Tensor kv_indptr, torch::Tensor kv_indices,
                 torch::Tensor last_page_offset, torch::Tensor k,
                 torch::Tensor v, torch::Tensor k_param, torch::Tensor v_param,
                 torch::Tensor seqlen_indptr, int layer_idx) {
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
   CHECK_INPUT(k);
   CHECK_INPUT(v);
@@ -171,7 +171,7 @@ void init_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 1]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
   CHECK_DIM(3, k);                 // [sum(seqlen_i), N, D]
   CHECK_DIM(3, v);                 // [sum(seqlen_i), N, D]
@@ -193,7 +193,7 @@ void init_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
 
   FlashInferInitKvKernel_i4<128>(
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), (void *)k.data_ptr(),
       (void *)v.data_ptr(), (nv_half2 *)k_param.data_ptr(),
       (nv_half2 *)v_param.data_ptr(), seqlen_indptr.data_ptr<int32_t>(),
@@ -201,13 +201,13 @@ void init_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
 }
 
 void append_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
-                  torch::Tensor kv_indptr, torch::Tensor kv_indicies,
+                  torch::Tensor kv_indptr, torch::Tensor kv_indices,
                   torch::Tensor last_page_offset, torch::Tensor k,
                   torch::Tensor v, torch::Tensor k_param, torch::Tensor v_param,
                   int layer_idx) {
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
   CHECK_INPUT(k);
   CHECK_INPUT(v);
@@ -215,7 +215,7 @@ void append_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 1]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
   CHECK_DIM(3, k);                 // [B, N, D]
   CHECK_DIM(3, v);                 // [B, N, D]
@@ -237,7 +237,7 @@ void append_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
 
   FlashInferAppendKvKernel_i4<128>(
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), (void *)k.data_ptr(),
       (void *)v.data_ptr(), (nv_half2 *)k_param.data_ptr(),
       (nv_half2 *)v_param.data_ptr(), num_layers, layer_idx, num_heads,
@@ -246,13 +246,13 @@ void append_kv_i4(torch::Tensor kv_data, torch::Tensor kv_param,
 
 void batch_decode_f16(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
                      torch::Tensor kv_param, torch::Tensor kv_indptr,
-                     torch::Tensor kv_indicies, torch::Tensor last_page_offset,
+                     torch::Tensor kv_indices, torch::Tensor last_page_offset,
                      int layer_idx) {
   CHECK_INPUT(o);
   CHECK_INPUT(q);
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
 
   CHECK_DIM(3, o);                 // [B, N, D]
@@ -260,7 +260,7 @@ void batch_decode_f16(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 2]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
 
   CHECK_EQ(kv_data.scalar_type(), at::ScalarType::Half);
@@ -279,19 +279,19 @@ void batch_decode_f16(torch::Tensor o, torch::Tensor q, torch::Tensor kv_data,
   FlashInferBatchDecodeKernel_f16<128>(
       (nv_half *)o.data_ptr(), (nv_half *)q.data_ptr(),
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), num_layers, layer_idx, num_heads,
       page_size, batch_size);
 }
 
 void init_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
-                torch::Tensor kv_indptr, torch::Tensor kv_indicies,
+                torch::Tensor kv_indptr, torch::Tensor kv_indices,
                 torch::Tensor last_page_offset, torch::Tensor k,
                 torch::Tensor v, torch::Tensor k_param, torch::Tensor v_param,
                 torch::Tensor seqlen_indptr, int layer_idx) {
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
   CHECK_INPUT(k);
   CHECK_INPUT(v);
@@ -300,7 +300,7 @@ void init_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 1]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
   CHECK_DIM(3, k);                 // [sum(seqlen_i), N, D]
   CHECK_DIM(3, v);                 // [sum(seqlen_i), N, D]
@@ -322,7 +322,7 @@ void init_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
 
   FlashInferInitKvKernel_f16<128>(
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), (void *)k.data_ptr(),
       (void *)v.data_ptr(), (nv_half2 *)k_param.data_ptr(),
       (nv_half2 *)v_param.data_ptr(), seqlen_indptr.data_ptr<int32_t>(),
@@ -330,13 +330,13 @@ void init_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
 }
 
 void append_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
-                  torch::Tensor kv_indptr, torch::Tensor kv_indicies,
+                  torch::Tensor kv_indptr, torch::Tensor kv_indices,
                   torch::Tensor last_page_offset, torch::Tensor k,
                   torch::Tensor v, torch::Tensor k_param, torch::Tensor v_param,
                   int layer_idx) {
   CHECK_INPUT(kv_data);
   CHECK_INPUT(kv_indptr);
-  CHECK_INPUT(kv_indicies);
+  CHECK_INPUT(kv_indices);
   CHECK_INPUT(last_page_offset);
   CHECK_INPUT(k);
   CHECK_INPUT(v);
@@ -344,7 +344,7 @@ void append_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
   CHECK_DIM(6, kv_data);           // [None, L, 2, N, P, D]
   CHECK_DIM(6, kv_param);          // [None, L, 2, N, P, 1]
   CHECK_DIM(1, kv_indptr);         // [B+1]
-  CHECK_DIM(1, kv_indicies);       // [None]
+  CHECK_DIM(1, kv_indices);       // [None]
   CHECK_DIM(1, last_page_offset);  // [B]
   CHECK_DIM(3, k);                 // [B, N, D]
   CHECK_DIM(3, v);                 // [B, N, D]
@@ -366,7 +366,7 @@ void append_kv_f16(torch::Tensor kv_data, torch::Tensor kv_param,
 
   FlashInferAppendKvKernel_f16<128>(
       (void *)kv_data.data_ptr(), (nv_half2 *)kv_param.data_ptr(),
-      kv_indptr.data_ptr<int32_t>(), kv_indicies.data_ptr<int32_t>(),
+      kv_indptr.data_ptr<int32_t>(), kv_indices.data_ptr<int32_t>(),
       last_page_offset.data_ptr<int32_t>(), (void *)k.data_ptr(),
       (void *)v.data_ptr(), (nv_half2 *)k_param.data_ptr(),
       (nv_half2 *)v_param.data_ptr(), num_layers, layer_idx, num_heads,
