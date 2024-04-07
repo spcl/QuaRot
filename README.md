@@ -21,3 +21,17 @@ pip install -e .  # or pip install .
 ```
 
 For simulation results, check [fake_quant](https://github.com/spcl/QuaRot/tree/main/fake_quant) directory.
+
+
+### Citation 
+
+The full citation is
+
+```
+@article{ashkboos2024quarot,
+  title={QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs},
+  author={Ashkboos, Saleh and Mohtashami, Amirkeivan and Croci, Maximilian L and Li, Bo and Jaggi, Martin and Alistarh, Dan and Hoefler, Torsten and Hensman, James},
+  journal={arXiv preprint arXiv:2404.00456},
+  year={2024}
+}
+```
