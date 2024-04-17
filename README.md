@@ -23,7 +23,13 @@ pip install -e .  # or pip install .
 For simulation results, check [fake_quant](https://github.com/spcl/QuaRot/tree/main/fake_quant) directory.
 
 
-### Citation 
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=spcl/QuaRot&type=Date)](https://star-history.com/#spcl/QuaRot&Date)
+
+
+## Citation 
 
 The full citation is
 
