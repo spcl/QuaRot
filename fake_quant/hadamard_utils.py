@@ -32,7 +32,7 @@ def get_hadK(n, transpose=False):
         assert (is_pow2(n // 36))
         K = 36
         hadK = get_had36().T if transpose else get_had36()
-    elif n % 28 == 0:
+    elif n % 28 == 0: #llama-3 up
         assert (is_pow2(n // 28))
         K = 28
         hadK = get_had28().T if transpose else get_had28()
