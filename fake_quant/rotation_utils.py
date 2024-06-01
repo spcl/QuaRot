@@ -48,8 +48,13 @@ def fuse_layer_norms(model):
     
     kwargs = {'model': model, 'model_type': model_type}
     
+    lm_head = model_utils.get_lm_head(**kwargs)
+
     # Embedding fusion
     for W in model_utils.get_embeddings(**kwargs):
+        if lm_head.weight is W.weight:
+            # Copy the weights if they are tied.
+            lm_head.weight = torch.nn.Parameter(lm_head.weight.clone())
         W_ = W.weight.data.double()
         W.weight.data = (W_ - W_.mean(dim=-1, keepdim=True)).to(W.weight.data.dtype)
         
@@ -75,7 +80,7 @@ def fuse_layer_norms(model):
             bake_mean_into_linear(layer.fc2)
                     
     
-    fuse_ln_linear(model_utils.get_pre_head_layernorm(**kwargs), [model_utils.get_lm_head(**kwargs)])
+    fuse_ln_linear(model_utils.get_pre_head_layernorm(**kwargs), [lm_head])
     
     model_utils.replace_modules(
         model,
