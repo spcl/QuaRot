@@ -149,7 +149,7 @@ def main():
 
         
     
-    if args.distribute_model:
+    if args.distribute:
         utils.distribute_model(model)
     else:
         model.to(utils.DEV)
