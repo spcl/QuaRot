@@ -238,7 +238,11 @@ def rotate_model(model, args):
 
     model_type = model_utils.model_type_extractor(model)
     rotate_embeddings(model, Q)
-    rotate_head(model, Q)
+
+    # if the input_embeddings (embeddings) and output_embeddings (lm_head) are tied, avoid rotating twice since they reference the same data.
+    if not model.config.tie_word_embeddings:
+        rotate_head(model, Q)
+    
     utils.cleanup_memory()
     layers = model_utils.get_transformer_layers(model, 
                                                 model_type=model_type)
