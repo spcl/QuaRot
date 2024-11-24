@@ -238,7 +238,11 @@ def rotate_model(model, args):
 
     model_type = model_utils.model_type_extractor(model)
     rotate_embeddings(model, Q)
-    rotate_head(model, Q)
+
+    # if the input_embeddings (embeddings) and output_embeddings (lm_head) are tied, avoid rotating twice since they reference the same data.
+    if not model.config.tie_word_embeddings:
+        rotate_head(model, Q)
+    
     utils.cleanup_memory()
     layers = model_utils.get_transformer_layers(model, 
                                                 model_type=model_type)
@@ -294,7 +298,7 @@ class QKRotationWrapper(torch.nn.Module):
         
 
         if self.k_groupsize == -1: #token-wise quantization
-            token_wise_k = k.transpose(1, 2).reshape(-1, self.config.hidden_size)
+            token_wise_k = k.transpose(1, 2).reshape(-1, self.config.hidden_size * self.config.num_key_value_heads / self.config.num_attention_heads)
             self.k_quantizer.find_params(token_wise_k)
             k = self.k_quantizer(token_wise_k).reshape((bsz, seq_len, num_heads, head_dim)).transpose(1, 2).to(q)
         else: #head-wise quantization
