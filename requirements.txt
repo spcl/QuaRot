@@ -1,4 +1,4 @@
-transformers==4.36.0
+transformers==4.38.0
 torch==2.2.1
 sentencepiece==0.2.0
 wandb==0.16.3
