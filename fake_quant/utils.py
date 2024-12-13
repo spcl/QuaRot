@@ -11,14 +11,14 @@ import logging
 from accelerate import dispatch_model, infer_auto_device_map
 from accelerate.utils import get_balanced_memory
 
-supported_models = [
-            'meta-llama/Llama-2-7b-hf',
-            'meta-llama/Llama-2-13b-hf',
-            'meta-llama/Llama-2-70b-hf',
-            'meta-llama/Meta-Llama-3-8B',
-            'meta-llama/Meta-Llama-3-70B',
-            'facebook/opt-125m'
-            ]
+# supported_models = [
+#             'meta-llama/Llama-2-7b-hf',
+#             'meta-llama/Llama-2-13b-hf',
+#             'meta-llama/Llama-2-70b-hf',
+#             'meta-llama/Meta-Llama-3-8B',
+#             'meta-llama/Meta-Llama-3-70B',
+#             'facebook/opt-125m'
+#             ]
 supported_datasets = ['wikitext2', 'ptb', 'c4']
 
 # These flags disable using TensorFloat-32 tensor cores (to avoid numerical issues)
@@ -73,7 +73,9 @@ def parser_gen():
 
     # General Arguments
     parser.add_argument('--model', type=str, default='meta-llama/Llama-2-7b-hf',
-                        help='Model to load;', choices=supported_models)
+                        help='Model to load;', 
+                        # choices=supported_models
+                        )
     parser.add_argument('--seed', type=int, default=0, help='Random Seed for HuggingFace and PyTorch')
     parser.add_argument('--eval_dataset', type=str, default='wikitext2',
                         help='Dataset for Evaluation (default: wikitext2)', choices=supported_datasets,)
@@ -251,7 +253,7 @@ def cleanup_memory(verbos=True) -> None:
 
 def distribute_model(model) -> None:
     """Distribute the model across available GPUs. NB: only implemented for Llama-2."""
-    no_split_module_classes = ['LlamaDecoderLayer']
+    no_split_module_classes = ['LlamaDecoderLayer', 'MistralDecoderLayer', 'Qwen2DecoderLayer']
     max_memory = get_balanced_memory(
         model,
         no_split_module_classes=no_split_module_classes,
