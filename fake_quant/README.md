@@ -6,7 +6,7 @@ In this directory, we provide the torch scripts for the experiments in QuaRot.
 
 ## Language Generation and Zero-Shot Evaluations
 
-Currently, we only support **LLaMa-2** models. You can simply run the `main.py` to reproduce the results in the paper. The most important arguments are:
+Currently, we only support **LLaMa/Mistral/Qwen2** models. You can simply run the `main.py` to reproduce the results in the paper. The most important arguments are:
 
 - `--model`: the model name (or path to the weights)
 - `--bsz`: the batch size for PPL evaluation

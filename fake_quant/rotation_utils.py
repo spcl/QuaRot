@@ -59,7 +59,6 @@ def fuse_layer_norms(model):
     for layer in layers:
         
         # fuse the input layernorms into the linear layers
-        # if model_type == model_utils.LLAMA_MODEL:
         if model_utils.is_llama_like_causal_lm(model):
             fuse_ln_linear(layer.post_attention_layernorm, [layer.mlp.up_proj, layer.mlp.gate_proj])    
             fuse_ln_linear(layer.input_layernorm, [layer.self_attn.q_proj, layer.self_attn.k_proj, layer.self_attn.v_proj])
@@ -81,7 +80,6 @@ def fuse_layer_norms(model):
     model_utils.replace_modules(
         model,
         model_utils.get_norm_type(model),
-        # transformers.models.llama.modeling_llama.LlamaRMSNorm if model_type == model_utils.LLAMA_MODEL else torch.nn.LayerNorm,
         lambda _: model_utils.RMSN(model.config.hidden_size),
         replace_layers=False,
     )
@@ -134,7 +132,6 @@ def rotate_attention_inputs(layer, Q, model_type) -> None:
 
 def rotate_attention_output(layer, Q, model_type) -> None:
     # Rotate output matrix of the self-attention layer.
-    # if model_type == model_utils.LLAMA_MODEL:
     if model_utils.is_llama_like_model_type(model_type):
         W = layer.self_attn.o_proj
     elif model_type == model_utils.OPT_MODEL:
@@ -151,7 +148,6 @@ def rotate_attention_output(layer, Q, model_type) -> None:
 
 def rotate_mlp_input(layer, Q, model_type):
     # Rotate the MLP input weights.
-    # if model_type == model_utils.LLAMA_MODEL:
     if model_utils.is_llama_like_model_type(model_type):
         mlp_inputs = [layer.mlp.up_proj, layer.mlp.gate_proj]
     elif model_type == model_utils.OPT_MODEL:
@@ -165,7 +161,6 @@ def rotate_mlp_input(layer, Q, model_type):
     
 def rotate_mlp_output(layer, Q, model_type):
     # Rotate the MLP output weights and bias.
-    # if model_type == model_utils.LLAMA_MODEL:
     if model_utils.is_llama_like_model_type(model_type):
         W = layer.mlp.down_proj
     elif model_type == model_utils.OPT_MODEL:
@@ -201,7 +196,6 @@ def matmul_hadU_cuda_had(X, hadK, transpose=False):
 
 def rotate_faster_down_proj(layer, model_type, hardK):
     from fast_hadamard_transform import hadamard_transform
-    # if model_type == model_utils.LLAMA_MODEL:
     if model_utils.is_llama_like_model_type(model_type):
         W = layer.mlp.down_proj
     else:
@@ -221,7 +215,6 @@ def rotate_head(model, Q: torch.Tensor) -> None:
 
 def rotate_ov_proj(layer, model_type, head_num, head_dim):
     v_proj = layer.self_attn.v_proj
-    # if model_type == model_utils.LLAMA_MODEL:
     if model_utils.is_llama_like_model_type(model_type):
         o_proj = layer.self_attn.o_proj
     elif model_type == model_utils.OPT_MODEL:

@@ -9,8 +9,6 @@ from transformers import (LlamaForCausalLM, MistralForCausalLM, Qwen2ForCausalLM
 
 OPT_MODEL = transformers.models.opt.modeling_opt.OPTForCausalLM
 OPT_LAYER = transformers.models.opt.modeling_opt.OPTDecoderLayer
-# LLAMA_MODEL = transformers.models.llama.modeling_llama.LlamaForCausalLM
-# LLAMA_LAYER = transformers.models.llama.modeling_llama.LlamaDecoderLayer
 
 
 def is_supported_llama_like_model_name(model_name: str):
@@ -19,8 +17,6 @@ def is_supported_llama_like_model_name(model_name: str):
             'mistral' in model_name.lower())
 
 def model_type_extractor(model):
-    # if isinstance(model, LLAMA_MODEL):
-    #     return LLAMA_MODEL
     if isinstance(model, LlamaForCausalLM):
         return LlamaForCausalLM
     elif isinstance(model, MistralForCausalLM):
@@ -44,7 +40,6 @@ def is_llama_like_model_type(model_type):
     return model_type in (LlamaForCausalLM, MistralForCausalLM, Qwen2ForCausalLM)
 
 def get_rope_function_name(model):
-    # if isinstance(model, LLAMA_MODEL):
     if is_llama_like_causal_lm(model):
         return "apply_rotary_pos_emb"
     raise NotImplementedError
@@ -53,7 +48,6 @@ def get_rope_function_name(model):
 def get_layers(model):
     if isinstance(model, OPT_MODEL):
         return model.model.decoder.layers
-    # if isinstance(model, LLAMA_MODEL):
     if is_llama_like_causal_lm(model):
         return model.model.layers
     raise NotImplementedError
@@ -86,7 +80,6 @@ def get_opt(model_name):
 def get_model(
     model_name, hf_token=None
 ):
-    # if 'llama' in model_name:
     if is_supported_llama_like_model_name(model_name):
         return get_llama_like(model_name, hf_token)
     elif 'opt' in model_name:
@@ -106,7 +99,6 @@ def get_model_type(model):
     return model_type
 
 def get_embeddings(model, model_type) -> list[torch.nn.Module]:
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         return [model.model.embed_tokens]
     elif model_type == OPT_MODEL:
@@ -116,7 +108,6 @@ def get_embeddings(model, model_type) -> list[torch.nn.Module]:
 
 
 def get_transformer_layers(model, model_type):
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         return [layer for layer in model.model.layers]
     elif model_type == OPT_MODEL:
@@ -126,7 +117,6 @@ def get_transformer_layers(model, model_type):
 
 
 def get_lm_head(model, model_type):
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         return model.lm_head
     elif model_type == OPT_MODEL:
@@ -135,8 +125,6 @@ def get_lm_head(model, model_type):
         raise ValueError(f'Unknown model type {model_type}')
 
 def get_norm_type(model):
-    # model_type = get_model_type(model)
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         if isinstance(model, LlamaForCausalLM):
             return transformers.models.llama.modeling_llama.LlamaRMSNorm
@@ -149,7 +137,6 @@ def get_norm_type(model):
         
 
 def get_pre_head_layernorm(model, model_type):
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         pre_head_layernorm = model.model.norm
         assert isinstance(pre_head_layernorm,
@@ -165,7 +152,6 @@ def get_pre_head_layernorm(model, model_type):
 
 def get_mlp_bottleneck_size(model):
     model_type = get_model_type(model)
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(model):
         return model.config.intermediate_size
     elif model_type == OPT_MODEL:
@@ -212,7 +198,7 @@ class RMSN(torch.nn.Module):
     https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py#L75
     """
 
-    def __init__(self, mean_dim: int, eps=1e-5):
+    def __init__(self, mean_dim: int, eps=1e-6):
         super().__init__()
         self.eps = eps
         self.mean_dim = mean_dim
@@ -241,7 +227,6 @@ def capture_layer_io(model_type, layer, layer_input):
 
     handles = []
 
-    # if model_type == LLAMA_MODEL:
     if is_llama_like_causal_lm(layer):
         captured_inputs = {
             'k_proj': [],  # q_proj, v_proj has the same input as k_proj
