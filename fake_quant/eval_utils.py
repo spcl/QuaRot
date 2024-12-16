@@ -15,7 +15,7 @@ def evaluator(model, testenc, dev, args):
     if 'opt' in args.model:
         opt_type = True
         llama_type = False
-    elif 'meta' in args.model:
+    elif model_utils.is_llama_like_causal_lm(model):
         llama_type = True
         opt_type = False
     else:

@@ -9,6 +9,7 @@ import gptq_utils
 import eval_utils
 import hadamard_utils
 
+
 def main():
     args = utils.parser_gen()
     if args.wandb:
@@ -57,8 +58,9 @@ def main():
             model.load_state_dict(save_dict["model"])
             
         elif not args.w_rtn: # GPTQ Weight Quantization
-            assert "llama" in args.model, "Only llama is supported for GPTQ!"
-            
+            # assert "llama" in args.model, "Only llama is supported for GPTQ!"
+            assert model_utils.is_supported_llama_like_model_name(args.model), "Only llama, qwen and mistral are supported for GPTQ!"
+
             trainloader = data_utils.get_loaders(
                 args.cal_dataset, nsamples=args.nsamples,
                 seed=args.seed, model=args.model,
@@ -79,7 +81,7 @@ def main():
     if args.a_bits < 16 or args.v_bits < 16:
         qlayers = quant_utils.find_qlayers(model, layers=[quant_utils.ActQuantWrapper])
         down_proj_groupsize = -1
-        if args.a_groupsize > 0 and "llama" in args.model:
+        if args.a_groupsize > 0 and model_utils.is_supported_llama_like_model_name(args.model):
             down_proj_groupsize = utils.llama_down_proj_groupsize(model, args.a_groupsize)
         
         for name in qlayers:            
