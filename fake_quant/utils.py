@@ -7,7 +7,6 @@ import os
 from datetime import datetime
 import logging
 
-
 from accelerate import dispatch_model, infer_auto_device_map
 from accelerate.utils import get_balanced_memory
 
@@ -16,9 +15,13 @@ supported_models = [
             'meta-llama/Llama-2-13b-hf',
             'meta-llama/Llama-2-70b-hf',
             'meta-llama/Meta-Llama-3-8B',
+            'meta-llama/Meta-Llama-3-70B',
+            'meta-llama/Llama-3.1-8B',
+            'meta-llama/Llama-3.1-70B',
+            'meta-llama/Llama-3.1-405B',
             'meta-llama/Llama-3.2-1B',
             'meta-llama/Llama-3.2-3B',
-            'facebook/opt-125m'
+            'facebook/opt-125m',
             ]
 supported_datasets = ['wikitext2', 'ptb', 'c4']
 
